@@ -1,0 +1,345 @@
+<html><head><title>wsUploader: description</title>
+
+<style type="text/css">
+
+.smooshedList,.smooshedMenu {
+   margin:3px 2em 2px 2em ;
+}
+.smooshedList li, .smooshedMenu li {
+   list-style-type: none;
+   padding: 6px;
+   margin:5px;
+   border:1px solid gray;
+   border-radius:2px;
+}
+
+.tightList,.tightMenu,.tightUl,.thinList {
+   margin:3px 2em 2px 1em ;
+   list-style-type:disc !important;
+}
+.thinList li {
+   padding: 1px;
+   margin:1px;
+}
+.sectionHeader {
+  background-color:lime;
+  font-size:110%;
+  font-weight:700;
+  width:50%;
+  margin:15px 3em 5px 5px;
+}
+.sectionHeader2 {
+  background-color:#dadbda ;
+  font-size:100%;
+  font-weight:700;
+  width:30%;
+  margin:10px 3em 5px 5px;
+}
+
+</style>
+
+</head>
+<body>
+  <h3>wsUploader</b>: a http file upload utility</h3>
+
+  <b>wsUploader</b> is a web utility used to transfer files -- lots of files --
+  from a <em>source</em> http: server to a <em>target</em> http server. This means
+ <ul class="thinList">
+ <li> The <em>source</em> is a  http: server, that contains files to be uploaded.
+ <li> The <em>target</em> is a  http: server, where these files are uploaded to.
+ </ul>
+
+<div class="sectionHeader">What does wsUploader do</div>
+
+wsUploader is designed to upload (copy) files in a directory  on  a <em>source server </em> to a
+directory on a <em>target server</em>. The upload will include all   files in
+all subdirectories in the chosen directory on the <em>source</em> server!
+<br>It uses a web browser as a user interface, and transfers files using http techniques. That means that the
+<em>target</em> server does not have to be running <tt>FTP</tt> or some other non-http protocol.
+
+<div class="sectionHeader2">wsUploader features</div>
+<ul class="smooshedList">
+  <li>Specify source and target root directories -- that can be anywhere on the server
+  <li> Select which subdirectories (in the source) to upload
+  <li>Select whether to overwrite all (or older) existing files on the target
+  <li>Uses ZIP compression to speed up transfer
+  <li>To deal with file size limits, uploading is done in many steps. Some steps upload several small files
+ at once, and some steps upload large files one-piece-at-a-time.
+  <li>Continuous monitoring of progress, with pause and resume capablities. And unattended operation for
+  lengthy amounts of time (hours if necessary).
+</ul>
+<div style="border:2px solid yellow;margin:5px 3em 5px 3em;padding:5px">
+<span style="font-weight:800;font-size:110%">Caution!</span>
+<b>wsUploader</b> has a few security features. These include password access, and
+important parameters can only be set by editing .php files.
+<br>However, the password algorithim is not strong, and is stored in the .php files in a non-encrypted state.
+In addition the .php files are not encrypted.
+<p>If you can <b>not</b>  limit access to these files, wsUploader poses a large security risk and <b>should NOT be
+installed</b>. A malfactor with such access can transfer any any file on the
+<em>source</em> server to anywhere. Or copy massive amounts of junk files  to your
+<em>target</em> server.
+
+<div style="background-color:#daeada;padding:1em">
+If you <b>can</b> limit access to these files, for additional security one should disable the <em>target server</em> when no
+uploading is expected.
+<br>
+This can be easily accomplished by specifying <tt>$targetDirs=[]</tt> in
+ the <tt>user changeable parmeters</tt> section of <tt>uploaderTarget.php</tt>.
+</div>
+</div>
+
+<div class="sectionHeader">Installation</div>
+
+<a name="install"> wsUploader</a> consists of several files in a .zip file. You should unzip this package to a dedicated
+directory on both the <em>source</em> and <em>target</em> http: servers.
+
+<ul class="thinList">
+ <li> <tt>wsUploader.php</tt> is the user interface. It contains the wsUploader <em>control panel</em>.
+ <li> <tt>wsUploaderTarget.php</tt> recieves, and saves, files on the target server. It is not meant
+for human use.
+ </ul>
+
+Both servers must support php ver. 7.2 or above.
+<div style="margin:3px 3px 3px 2em">
+Note that wsUploader uses functions from the wsurvey.lib suite of javascript and php libraries. wsUploader is distributed
+as a standalone, with the appropriate .js and .php library files included.
+</div>
+
+<div class="sectionHeader2">wsUploader setup</div>
+
+ Both source and target must be configured to talk to each other. For security reasons, this means setting parameters
+ in <tt>wsUploader.php</tt> and <tt>wsUploaderTarget.php</tt>. Using your favorite text editor, look for the
+ <tt>user changable variables </tt> section.
+ <p>
+
+<b>User-changable parameters in wsUploader.php</b>
+
+<table  style="margin-left:1.5em" rules="rows" cellpadding="4">
+<tr><td colspan="2">&nbsp;&nbsp;&nbsp;These are required -- they must be set  </td></tr>
+
+<tr>
+<td><tt>$targetPassword</tt></td>
+<td>
+A password used when uploading to the <em>target</em> server. This <b>must</b> match the
+<tt>targetPwd</tt> password specified in <tt>wsUploaderTarget.php</tt> (on the <em>target</em> server).!
+<br>Example:<tt> $targetPassword="doNotJustUsePassword"  ; </tt>
+<br>Note that the password is hashed before transmission, and has a 100 second lifespan.
+</td></tr>
+
+<tr><td><tt>$sourceNickname</tt></td>
+<td>
+The <em>nickname</em> used for this <em>source</em> server.
+This is used by the <em>target</em> server to specify the <em>target server directory</em>.
+<br>Thus: it <b>must</b> match one of the <em>target</em> server's <tt>targetDirs</tt> parameters.
+<br>Example:<tt> $sourceNickname="myServer"  ; </tt>
+
+</td></tr>
+
+<tr>
+ <td><tt>$sourceDir</tt></td>
+ <td>The  default <em>source directory</em>.  This must be a fully qualified directory that exists
+  on the <em>source</em> server (the server that hosts <tt>wsUploader.php</tt>).
+<br>Example: <tt>$sourceDir="D:/myFiles" ;</tt>
+</td>
+</tr>
+
+<tr>
+ <td><tt>$targetUri</tt></td>
+ <td>The fully qualified URL of <tt>wsUploaderTarget</tt> on the  <em>target</em> server.
+ <br>Example:  <tt>$targetUri="http://www.ourStorage.net/apps/wsUploader/wsUploaderTarget.php" ;</tt>
+</td>
+
+<tr><td colspan="2">&nbsp;&nbsp;&nbsp;These are optional -- the defaults can be used </td></tr>
+<tr>
+<td><tt>$userSelectSourceDir</tt></td>
+<td> Allow the source directory to be selected from the user interface.
+If <tt>0</tt> this is disabled: the <tt>$sourceDir</tt> is always used.
+<br>If <tt>1</tt> this is enabled; the <tt>$sourceDir</tt> can be changed via the browser
+</td></tr>
+
+
+<tr><td><tt>$skipSubdirs</tt></td>
+<td> A  CSV list of subdirectories names that are skipped -- files in subdirectories that match one of these
+names will be skipped (files in them will <b>not</b> be uploaded.
+<ul class="thinList">
+<li>The default is: <tt>$skipSubDirs='trash,tmp,temp,$RECYCLE.BIN'  ;      </tt>
+<li>do NOT include <tt>/</tt> (or <tt>\</tt>) when specifying a subdirectory.
+<li>the list of skipSubDirs can be changed from the control panel.
+</ul>
+</td>
+</tr>
+
+
+<td><tt>$skipExts</tt></td>
+<td>
+A  CSV list of file extension that are skipped -- files with an extension that matches one of these
+names will be skipped (files with such an extension will <b>not</b> be uploaded).
+<ul class="thinList">
+<li>The default is: <tt>$skipExts='tmp,temp,$,old, sf,arc' ;    </tt>
+<li>do NOT include <tt>.</tt> when specifying an extension.
+<li>the list of skipExts can be changed from the control panel.
+</ul>
+
+ </td></tr>
+
+<td><tt>$sourceNicknamesAllowed</tt></td>
+<td>
+Optional: if not a '', it should be a CSV list of <em>sourceNicknames</em>. 
+<br> The <em>control menu</em>
+will display a <button>switch</button> that can be used to choose which sourceNickname to use. And
+each sourceNickname is associated with a different root directory on the <em>target</em>.
+<br>Examples: <br>
+<tt>&nbsp;&nbsp;&nbsp;$sourceNicknamesAllowed='';   // do not allow choice of sourceNickname ($sourceNickname is always used)</tt><br>
+<tt>&nbsp;&nbsp;&nbsp;$sourceNicknamesAllowed='myServer,myServer2';   // allow user to select one of these two  </tt>
+<br>Note: each sourceNickname specified in <tt>$sourceNicknamesAllowed</tt>  <b>must</b> have corresponding entry
+ in the wsUploaderTarget.php <tt>targetDirs</tt>
+
+</td>
+</tr>
+
+</table>
+
+
+<b>User-changable parameters in wsUploaderTarget.php</b>
+
+<table style="margin-left:1.5em" rules="rows" cellpadding="4">
+
+<tr>
+<td><tt>$targetPwd</tt></td>
+<td>
+A password used when uploading to the <em>target</em> server. This <b>must</b> match the
+<tt>targetPassword</tt> password specified in <tt>wsUploader.php</tt> (on a <em>source</em> server).
+<br>Example:<tt> $targetPassword="doNotJustUsePassword"  ; </tt>
+<br>Note that a password sent from the <em>source</em> has a 100 second lifespan. However, once logged on
+there is no automatic logoff -- so file uploads can go on for hours.
+</td></tr>
+
+<tr>
+<td><tt>$targetDirs</tt></td>
+<td>
+An associative array specifying directories (on the <em>target</em> server) to upload files to, depending on
+the <em>source</em> nickname.
+<br>Subdirectories will be created under the appropriate <tt>targetDir</tt>, and files will be copied to these directories.
+<div style="margin:3px 3em 3px 3em">
+Thus: files will <b>never</b> be uploaded anywhere outside of a <em>source server specific</em> <tt>targetDir</tt>.
+</div>
+ Note that the subdirectory structure of the <tt>sourceDir</tt> directory  is replicated under its 
+ <tt>targetDir</tt>  (with the <tt>skipDirs</tt> ignored).
+
+<br>Examples:  <br>
+<tt>&nbsp;&nbsp;&nbsp; $targetDirs['myServer']="d:/archives/files1";</tt><br>
+<tt>&nbsp;&nbsp;&nbsp;  $targetDirs['hisServer']="d:/others/old";</tt>
+</td></tr>
+
+<tr>
+<td><tt>$targetNickname</tt></td>
+<td>
+A nickname used by the <em>target</em> server.
+This is only used for informational purposes (it is displayed on the control panel).
+
+<br>Example: <tt>$targetNickname="ourArchives"; </tt>
+</td></tr>
+</table>
+
+<p>
+
+<b>Multiple <em>source</em> servers can upload to a single <em>target</em> server</b>
+
+<div style="margin:3px 3em 3px 3em">
+By specifying unique <em>sourceNicknames</em>, each of several different <em>source</em> servers can
+upload files to seperate directories on the <em>target</em> server. Or, you can specify the same
+ <em>sourceNickname</em> to consolidate uploads from several different <em>source</em> servers.
+ <br>
+ In any case, be sure that for each <em>source</em> server, there is an entry in the <tt>targetDirs</tt>
+ parameter (on the <em>target</em> server) that matches the <em>source server's nickname</em>.
+</div>
+
+<p>
+
+<b>Using multiple <tt>sourceNicknames</tt> to save to different locations on a <em>target</em> server.</b>
+
+<div style="margin:3px 3em 3px 3em">
+By default the <em>source server</em>  sends the <tt>$sourceNickname</tt> to the <em>target server</em> during an upload.
+The <em>target server</em> uses the <tt>$sourceNickname</tt> to determine where to save uploaded files.
+<p>It can be convenient to choose different locations on the <em>target</em> to upload different kinds of files.
+The <tt>sourceNicknamesAllowed</tt> can used to accomplish this!
+<p> If <tt>sourceNicknamesAllowed</tt> is not '', then the control menu's <button>switch</button> can be used
+to select which <tt>sourceNickname</tt> to send to the <em>target server</em>. And the <em>target server</em> will use
+the chosen  <tt>sourceNickname</tt>  to determine where to save uploaded files.
+<p><em>Notes:</em>
+<ul>
+<li>All sourceNicknames specified in  <tt>sourceNicknamesAllowed</tt> <b>must</b> have a (case-sensitive) entry in the
+<em>target</em> server's  <tt>$targetDirs</tt> parameters-- an entry that specifies where to save files.
+ If not, an error will occur when attempting to upload to the <em>target server</em>.
+<li>The <button>switch</button> menu does <b>not</b> display the choices in <tt>sourceNicknamesAllowed</tt>: as a security
+measure it is assumed that the user knows what is available.
+<br>If one enters a sourceNickname that is <b>not</b> in <tt>sourceNicknamesAllowed</tt>, an error message is displayed --
+and one can then re-enter a different sourceNickname.
+<li>The same password is used for all sourceNicknames -- even sourceNicknames specifed on completely different
+<em>source server's</em> (each with their own installation of wsUploader).
+<br>
+In other words: the password is <b>not</b> specific to a given <em>source server</em>, each of which can
+utilize several sourceNicknames.<br>
+<li>If you specify <tt>sourceNicknamesAllowed</tt>: it is <strong>strongly</strong> recommended that you include the <tt>$sourceNickname</tt>!
+
+</ul>
+ </div>
+
+
+<b>The <tt>temp</tt> subdiretory </b>
+
+<div style="margin:3px 3em 3px 3em">
+When unzipping the <tt>wsurveyUploader</tt> installation (.zip) file -- a <tt>temp</tt> sub directory is created.
+The <tt>temp</tt> subdirectory is used by <tt>wsUploader.php</tt> -- it is where  .zip files are stored.
+<br><tt>wsUploader.php</tt> should remove these files after uploading them. But, if an error occurs, they might be
+left beind. Thus, occasionally checking this <tt>temp</tt> directory, and removing old files, is suggested.
+</div>
+
+<div class="sectionHeader">Useage</div>
+You (the user) will access the wsUploader <em>control panel</em> via a web browser.
+<br>For example, if you unzipped wsUploader to the <tt>tools</tt> directory of the <em>source</em> server at
+ <tt>www.myServer.org</tt> ... <br>
+&nbsp;&nbsp;   point your web browser at  <u>http://www.myServer.org/tools/wsUploader/wsUploader.php</u>
+<br>
+wsUploader will first retrieve and display information from the <em>target</em> server. Then
+several menus are displayed for choosing options such as the source directory, and what subdirectories to skip.
+<br>You then start the uploading.
+<div style="margin:3px 3em 3px 3em;background-color:#dfdeda">
+The <button>?</button> help button (top of the screen) describes these options.
+</div>
+
+<ul>
+<li>While uploading (and this can take hours if you have a lot of files), wsUploader will display status messages.
+<li> You can enable, or disable, display  of details on what was uploaded. Note that if there are a lot of files,
+this can lead to a huge text display. Some browsers might crash!<br>
+ Thus, by default the display of details is disabled.
+<li>You can   pause, or halt, the upload.
+<li>A note on overwriting older files.  Due to inaccuracies in the computation of file modification time, wsUploader
+imposes a 2 second cushion;  overwrite-of-older will occur if the <em>target server</em>  file is
+ more than 2 seconds older than the <em>source server</em> file.
+
+</ul>
+
+
+<div class="sectionHeader">How it works</div>
+wsUploader transfers files in two fashions -- depending on how large a file is.
+<ol type="i">
+<li>For small files that are less than the <em>target</em> server's <tt>upload_maxfile_size</tt> limit:
+A <em>set</em> of several small files are compressed into a .zip file -- with the size of the .zip file always
+less than this <tt>upload_maxfile_size</tt> limit. The .zip file is then uploaded, and the <em>target</em>
+server saves the enclosed files to the proper directories.
+<li>For large files that are larger than the <em>target</em> server's <tt>upload_maxfile_size</tt> limit:
+The file is broken into pieces -- each piece is smaller than the<tt>upload_maxfile_size</tt> limit. Each piece
+is compressed, and uploaded to the <em>target</em>. Thus: one piece of the file is uploaded at a time.
+<br>The <em>target</em> server accumulates these pieces, and
+reassembles them -- saving them to the appropriate file on the appropriate directory.
+</ol>
+This strategy has two benefits. First, it simplfies upload of any sized file (such as large movies).
+Second, by uploading in small chunks, it allows for nearly continuous monitoring of progress on the control panel.
+This avoids browser and server timeouts, lets the user know what is happening, and allows the user
+to pause (or halt) uploading.
+
+<hr>
+<em>end of documentation</em>
+</body>
+</html>
