@@ -1,1 +1,1 @@
-Old versions of wsGallery
+Old versions of wsUploader
