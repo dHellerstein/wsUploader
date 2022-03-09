@@ -60,7 +60,8 @@ all subdirectories in the chosen directory on the <em>source</em> server!
 <div class="sectionHeader2">wsUploader features</div>
 <ul class="smooshedList">
   <li>Specify source and target root directories -- that can be anywhere on the server
-  <li> Select which subdirectories (in the source) to upload
+  <li> Select which subdirectories (in the source) to upload. Optionally: preview files in a subdirectory,
+  and examine files.
   <li>Select whether to overwrite all (or older) existing files on the target
   <li>Uses ZIP compression to speed up transfer
   <li>To deal with file size limits, uploading is done in many steps. Some steps upload several small files
@@ -74,17 +75,23 @@ all subdirectories in the chosen directory on the <em>source</em> server!
 important parameters can only be set by editing .php files.
 <br>However, the password algorithim is not strong, and is stored in the .php files in a non-encrypted state.
 In addition the .php files are not encrypted.
-<p>If you can <b>not</b>  limit access to these files, wsUploader poses a large security risk and <b>should NOT be
-installed</b>. A malfactor with such access can transfer any any file on the
-<em>source</em> server to anywhere. Or copy massive amounts of junk files  to your
-<em>target</em> server.
+<dl>
+<dt>If strong security (better than MD5 hashing) is required, or if you can <b>not</b>  limit access to the files comprising
+ wsUploader, wsUploader  <b>should NOT be  installed</b>.</dt>
+<dd> A malefactor with such access can transfer   any file on the
+<em>source</em> server to anywhere.
+<br> Or copy massive amounts of junk files  to your <em>target</em> server. 
+<br>Or download any file on the <em>source</em> server.
+</dd>
+</dl>
 
 <div style="background-color:#daeada;padding:1em">
-If you <b>can</b> limit access to these files, for additional security one should disable the <em>target server</em> when no
-uploading is expected.
+If you <b>can</b> limit access to these files, for additional security one should disable the <em>source</em> and <em>target</em>
+ servers when no uploading is expected.
 <br>
-This can be easily accomplished by specifying <tt>$targetDirs=[]</tt> in
- the <tt>user changeable parmeters</tt> section of <tt>uploaderTarget.php</tt>.
+This can be easily accomplished by specifying <tt>$targetPassword=''</tt> in
+  <tt>uploaderTarget.php</tt>, and  <tt>$targetPwd=''</tt> in <tt>uploaderTarget.php</tt>.
+
 </div>
 </div>
 
@@ -99,10 +106,13 @@ directory on both the <em>source</em> and <em>target</em> http: servers.
 for human use.
  </ul>
 
-Both servers must support php ver. 7.2 or above.
-<div style="margin:3px 3px 3px 2em">
-Note that wsUploader uses functions from the wsurvey.lib suite of javascript and php libraries. wsUploader is distributed
+Notes:
+<ul class="thinList">
+<li>Both servers must support php ver. 7.2 or above.
+<li>wsUploader uses functions from the wsurvey.lib suite of javascript and php libraries. wsUploader is distributed
 as a standalone, with the appropriate .js and .php library files included.
+<li>See <a href="readme.txt">readme.txt</a> for installation details.
+</ul>
 </div>
 
 <div class="sectionHeader2">wsUploader setup</div>
@@ -115,6 +125,8 @@ as a standalone, with the appropriate .js and .php library files included.
 <b>User-changable parameters in wsUploader.php</b>
 
 <table  style="margin-left:1.5em" rules="rows" cellpadding="4">
+
+ <tr> <td colspan="2"> &nbsp; </td></tr>
 <tr><td colspan="2">&nbsp;&nbsp;&nbsp;These are required -- they must be set  </td></tr>
 
 <tr>
@@ -182,7 +194,7 @@ names will be skipped (files with such an extension will <b>not</b> be uploaded)
 
  </td></tr>
 
-<td><tt>$sourceNicknamesAllowed</tt></td>
+<tr><td><tt>$sourceNicknamesAllowed</tt></td>
 <td>
 Optional: if not a '', it should be a CSV list of <em>sourceNicknames</em>. 
 <br> The <em>control menu</em>
@@ -197,13 +209,60 @@ each sourceNickname is associated with a different root directory on the <em>tar
 </td>
 </tr>
 
+
+<tr><td><tt>$fileLookup</tt></td>
+<td>
+Optional: enable viewing lists of the files in a directory, and downloading files in a directory.
+<br>
+After clicking the <button>Select directories to upload</button>, a list of all subdirectories (excluding the 
+<tt>skipSubdirs</tt>) is displayed. 
+<p>If <tt>$fileLookup</tt> is enabled, a
+<button>&#128065;</button> appears next to each directory. Clicking on it will display a list of files in this subdirectory.
+And, if enabled -- each file can be viewed in a popup window (or downloaded if not viewable). 
+<br>
+<ul class="thinList">
+<li> <tt>$fileLookup=0</tt> : disable -- a list of files can not be displayed
+<li> <tt>$fileLookup=1</tt> : enabled -- list of files can be displayed, but file download is not enabled
+<li> <tt>$fileLookup='aPassword'</tt> : enabled -- list of files not displayed, <b>and</b> file download is enabled.
+File download requires that a password be entered, that must match whatever <tt>aPassword</tt> is.
+<br>Note that the <tt>$fileLookup</tt> password is <b>not</b> the same as the <tt>$targetPassword</tt>.
+
+</ul>
+<br>Examples:<br>
+<tt>&nbsp;&nbsp;&nbsp; $fileLookup=1 ; // list of files enabled </tt><br>
+<tt>&nbsp;&nbsp;&nbsp; $fileLookup='groundHog' ; // list of files enabled, and file downloads. 
+Password for file downloads is `groundHog` </tt><br>
+<p>
+Notes:
+<ul class="thinList">
+<li> that the list of files is cumulative -- everytime a <button>&#128065;</button> is clicked, the list grows.
+<li> You can clear this list by clicking the <button>Clear</button>.
+<li>Once you enter a password, it is used in further file downloads (you don't have to re-enter it).
+<li>But if you enter an incorrect <tt>fileLookup</tt> password -- you will have to use <button>Clear</button> to try again!
+</ul>
+
+<div style="border:2px solid yellow;margin:5px 3em 5px 3em;padding:5px">
+<span style="font-weight:800;font-size:110%">Caution!</span>
+The password is slightly secure (md5 hashing is used in transmission). 
+But, as with the <tt>targetPassword</tt> -- it is  stored (in <tt>wsUploader.php</tt>) in an <b>un</b>encrypted state.<br>
+ A  malefactor with access to the <tt>wsUploader.php</tt> could download any file on the <em>source server</em>.
+<p>
+As noted above: if access to the wsUploader files is not controlled, or if strong security is needed -- do <b>not</b> install
+wsUploader!
+</div>
+
+</td>
+</tr>
+
+ <tr> <td colspan="2"> &nbsp; </td></tr>
 </table>
 
-
+ <br>
 <b>User-changable parameters in wsUploaderTarget.php</b>
 
 <table style="margin-left:1.5em" rules="rows" cellpadding="4">
 
+ <tr> <td colspan="2"> &nbsp; </td></tr>
 <tr>
 <td><tt>$targetPwd</tt></td>
 <td>
@@ -239,6 +298,9 @@ This is only used for informational purposes (it is displayed on the control pan
 
 <br>Example: <tt>$targetNickname="ourArchives"; </tt>
 </td></tr>
+
+
+ <tr> <td colspan="2"> &nbsp; </td></tr>
 </table>
 
 <p>
@@ -286,7 +348,7 @@ utilize several sourceNicknames.<br>
  </div>
 
 
-<b>The <tt>temp</tt> subdiretory </b>
+<b>The <tt>temp</tt> subdirectory </b>
 
 <div style="margin:3px 3em 3px 3em">
 When unzipping the <tt>wsurveyUploader</tt> installation (.zip) file -- a <tt>temp</tt> sub directory is created.
