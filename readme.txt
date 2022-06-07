@@ -1,4 +1,4 @@
-9 March Feb 2022: wsUploader: upload many files from a source http server to a target http server.
+18 March 2022: wsUploader: upload many files from a source http server to a target http server.
 
 wsUploader is meant to be installed in two locations: a 'source http server' and a 'target http server'.
   On the source server, wsUploader should be extracted to its own directory.
@@ -18,6 +18,44 @@ After installation, the following MUST be modified
   *  On the target server: wsUploaderTarget.php
 
 See wsUploader_desc.htm for the details
+
+Run time errors
+
+   The following lists a few errors that may occur when using wsUploader (typically soon after wsUploader.php is loaded)
+
+  * Unable to connect to target
+
+	Is the targetUri correctly specified -- a fully qualified URL (ending with wsUploaderTarget.php) must be used
+	Does the targetUri exist on the server?
+        Maybe there is an error on the target server (is it running)?
+
+  *  "Not Found. The requested URL was not found on this server."
+
+     Is the targetUri correctly specified -- a fully qualified URL (ending with wsUploaderTarget.php) must be used
+     Is the target server properly setup? Perhaps there is an error in virtual host definition?
+
+  * "Unrecognized source server (aSourceNickame)....   "
+
+     Is the sourceNickname (in wsUploader.php on the source server) have a matching entry in $targetDirs['aSourceNickname']
+     (in wsUploaderTarget.php on the target server);
+
+  *  "Error: the default source directory (aDirectoryPath) does not exist. Please modify ..."
+
+       Does the $sourceDir does not refer to an existing directory (its value should be a fully qualified directory --
+      and be sure to use / and not \
+
+  *  "Unable to validate with the target server (using http://): mismatch
+      0,mismatch "
+
+      Is the targetPassword (in wsUploader.php on the source server) the same as the targetPwd (in wsUploaderTarget.php on the target server)
+
+
+ * wsUploader page appears, with  header box noting "
+   "No such target directory: .... This script (.../wsUploaderTarget.php) needs to be modified. "
+
+   Is the value of $targetDirs['aSourceNickname'] a fully qualified directory, that exists on the target server.
+    wsUploaderTarget.php WILL create subdirectories under this, but (for security reasons) it will NOT create this base directory.
+     
 
 Caution: 
   wsUploader has a few security features, but they are NOT strong.
